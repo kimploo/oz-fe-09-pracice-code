@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple Blog Post CRUD App</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      background-color: #f9f9f9;
+    }
+
+    header {
+      background-color: #4caf50;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    main {
+      padding: 1rem;
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+    }
+
+    form {
+      margin-bottom: 2rem;
+    }
+
+    form input, form textarea, form button {
+      display: block;
+      width: 100%;
+      margin: 0.5rem 0;
+      padding: 0.5rem;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    form button {
+      background-color: #4caf50;
+      color: white;
+      cursor: pointer;
+    }
+
+    form button:hover {
+      background-color: #45a049;
+    }
+
+    .post {
+      border-bottom: 1px solid #ddd;
+      padding: 1rem 0;
+    }
+
+    .post h3 {
+      margin: 0 0 0.5rem;
+    }
+
+    .post p {
+      margin: 0.5rem 0;
+    }
+
+    .post button {
+      margin-top: 0.5rem;
+      padding: 0.3rem 0.6rem;
+      background-color: #f44336;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .post button:hover {
+      background-color: #d32f2f;
+    }
+
+    .edit-form {
+      margin-top: 1rem;
+      background: #f1f1f1;
+      padding: 1rem;
+      border-radius: 4px;
+    }
+
+    .edit-form button {
+      background-color: #2196f3;
+    }
+
+    .edit-form button:hover {
+      background-color: #1e88e5;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Simple Post CRUD App</h1>
+  </header>
+  <main>
+    <form id="postForm">
+      <textarea id="content" rows="4" placeholder="Content" required></textarea>
+      <button type="submit">Add Post</button>
+    </form>
+
+    <div id="posts"></div>
+  </main>
+
+  <script>
+    const postForm = document.getElementById('postForm');
+    const postsContainer = document.getElementById('posts');
+
+    let posts = [];
+    let editIndex = null; // To track which post is being edited
+
+    // Add or Update Post
+    postForm.addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const content = document.getElementById('content').value;
+
+      const data = await fetch('http://localhost:8090/post', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          film_id: 1,
+          content,
+        })
+      })
+
+      postForm.reset();
+      renderPosts();
+    });
+
+    // Render Posts
+    async function renderPosts() {
+      postsContainer.innerHTML = '';
+      
+      const res = await fetch('http://localhost:8090/post')
+      .then(res => res.json())
+
+
+      res.data.forEach((post) => {
+        const postDiv = document.createElement('div');
+        postDiv.classList.add('post');
+
+        postDiv.innerHTML = `
+          <p>${post.content}</p>
+          <button onclick="deletePost(${post.post_id})">Delete</button>
+          <button onclick="editPost(${post.post_id})">Edit</button>
+        `;
+
+        postsContainer.appendChild(postDiv);
+      });
+    }
+
+    // Delete Post
+    async function deletePost(id) {
+      const data = await fetch(`http://localhost:8090/post/${id}`, {
+        method: 'DELETE'
+      }) 
+      renderPosts();
+    }
+
+    // Edit Post
+    async function editPost(id) {
+      const content = prompt("수정할 내용을 입력하세요.");
+      // const content = document.getElementById('content').value;
+      const data = await fetch(`http://localhost:8090/post/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          film_id: 1,
+          content,
+        })
+      }) 
+      renderPosts();
+    }
+
+    renderPosts(); // Initial render
+  </script>
+</body>
+</html>
